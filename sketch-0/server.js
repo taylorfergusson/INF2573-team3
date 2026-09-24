@@ -20,6 +20,7 @@ const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.MODEL || "claude-haiku-4-5-20251001";
 const events = JSON.parse(fs.readFileSync(path.join(__dirname, "events.json"), "utf8"));
+const goingLogPath = path.join(__dirname, "going-log.jsonl"); // one line per "I'd go" click
 
 // Is the `claude` command installed? (checked once at startup)
 let claudeCodeAvailable = false;
@@ -55,8 +56,9 @@ Here is a list of upcoming events (JSON):
 ${JSON.stringify(events)}
 
 Pick the 5 events that best match their interests. For each, write one short, specific sentence explaining why it matches.
-Where it helps, work in a detail from the event's reviews, rating, or who's going (e.g. "18 people are going, and reviewers say beginners never feel out of place").
-Only use reviews and attendee details that appear in the event data; never invent any.
+Each event's "friends" field lists this person's friends who are going, and "organizer" has the organizer's rating and a review.
+Where it helps, work in a detail from the event or organizer reviews, or who's going, especially friends (e.g. "your friend Priya is going, and reviewers say beginners never feel out of place").
+Only use reviews, organizer and attendee details that appear in the event data; never invent any.
 Only choose from the list. If fewer than 5 are a genuine fit, return fewer.
 Respond with JSON only, no other text, in this shape:
 {"matches": [{"id": <event id>, "reason": "<one sentence>"}]}`;
@@ -143,7 +145,14 @@ function matchWithKeywords(interests) {
       return { ...e, score: hits.length, reason: hits.length ? `Mentions: ${hits.join(", ")}` : "" };
     })
     .filter((e) => e.score > 0)
-    .sort((a, b) => b.score - a.score)
+    // Ties go to events with friends going, then better-reviewed, then busier ones
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (b.friends || []).length - (a.friends || []).length ||
+        (b.rating || 0) - (a.rating || 0) ||
+        (b.going || 0) - (a.going || 0)
+    )
     .slice(0, 5);
 }
 
@@ -172,6 +181,27 @@ const server = http.createServer(async (req, res) => {
       } catch (err) {
         console.error(err);
         res.writeHead(500, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
+  // "I'd go" clicks: a first signal for our north star (events people would attend)
+  if (req.method === "POST" && req.url === "/api/going") {
+    let body = "";
+    req.on("data", (c) => (body += c));
+    req.on("end", () => {
+      try {
+        const { id, interests } = JSON.parse(body || "{}");
+        const event = events.find((e) => e.id === id);
+        if (!event) throw new Error("Unknown event.");
+        const entry = { time: new Date().toISOString(), eventId: id, title: event.title, interests: String(interests || "") };
+        fs.appendFileSync(goingLogPath, JSON.stringify(entry) + "\n");
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (err) {
+        res.writeHead(400, { "content-type": "application/json" });
         res.end(JSON.stringify({ error: err.message }));
       }
     });

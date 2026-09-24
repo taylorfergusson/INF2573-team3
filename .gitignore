@@ -5,3 +5,6 @@
 # System / editor clutter
 .DS_Store
 node_modules/
+
+# Sketch 0 "I'd go" click log (local test data)
+**/going-log.jsonl
