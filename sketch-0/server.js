@@ -53,21 +53,31 @@ function parseMatches(text) {
 // --- Option A (default): ask Claude Code, using your Claude subscription ---
 function matchWithClaudeCode(interests) {
   return new Promise((resolve, reject) => {
-    execFile(
+    const child = execFile(
       "claude",
       ["-p", buildPrompt(interests), "--output-format", "json"],
       { cwd: os.tmpdir(), timeout: 120000, maxBuffer: 10 * 1024 * 1024 },
       (err, stdout, stderr) => {
-        if (err) {
-          if (err.code === "ENOENT") claudeCodeAvailable = false;
-          return reject(new Error(`Claude Code failed: ${stderr || err.message}`));
-        }
         let out = null;
         try {
           out = JSON.parse(stdout);
         } catch {}
-        if (out && out.is_error) {
-          return reject(new Error(`Claude Code returned an error: ${out.result || "unknown"}`));
+
+        if (err || (out && out.is_error)) {
+          if (err && err.code === "ENOENT") claudeCodeAvailable = false;
+          // Show the real reason, not just the first warning line
+          const cleanStderr = (stderr || "")
+            .split("\n")
+            .filter((l) => l.trim() && !l.includes("no stdin data received"))
+            .join(" ");
+          const reason =
+            (out && out.result) ||
+            cleanStderr ||
+            (stdout || "").trim() ||
+            (err && err.killed ? "it took longer than 2 minutes" : err && err.message) ||
+            "unknown error";
+          console.error("Claude Code error details:", { code: err && err.code, stdout, stderr });
+          return reject(new Error(`Claude Code failed: ${reason}`));
         }
         try {
           resolve(parseMatches(out && typeof out.result === "string" ? out.result : stdout));
@@ -76,6 +86,8 @@ function matchWithClaudeCode(interests) {
         }
       }
     );
+    // Close stdin so Claude Code doesn't wait for piped input
+    child.stdin.end();
   });
 }
 
