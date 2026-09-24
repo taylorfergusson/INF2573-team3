@@ -35,8 +35,8 @@ button.addEventListener("click", async () => {
 
     modeNote.textContent =
       data.mode === "ai"
-        ? "Matches are picked by an AI model and may be wrong. Events are made-up sample data."
-        : "No AI key set: matching by simple keywords, not AI. Events are made-up sample data.";
+        ? "Matches are picked by an AI model and may be wrong. Events, reviews and attendees are made-up sample data."
+        : "No AI key set: matching by simple keywords, not AI. Events, reviews and attendees are made-up sample data.";
 
     if (!data.matches.length) {
       results.innerHTML = "<p>No matching events found. Try different interests.</p>";

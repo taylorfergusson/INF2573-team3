@@ -29,14 +29,34 @@ try {
 } catch {}
 
 // --- The instructions we give the AI ---
+// The team's product strategy lives in strategy.md so it can be edited without touching code.
+// Read on every request, so edits apply without restarting the server.
+const strategyPath = path.join(__dirname, "strategy.md");
+function loadStrategy() {
+  try {
+    return fs.readFileSync(strategyPath, "utf8").trim();
+  } catch {
+    console.warn("strategy.md not found — matching without it");
+    return "";
+  }
+}
+
 function buildPrompt(interests) {
-  return `A person in Toronto described their interests as:
+  const strategy = loadStrategy();
+  return `${strategy ? `You are the event-matching step of our app. Our product strategy is below; let it guide which events you pick and how you explain them.
+<strategy>
+${strategy}
+</strategy>
+
+` : ""}A person in Toronto described their interests as:
 "${interests}"
 
 Here is a list of upcoming events (JSON):
 ${JSON.stringify(events)}
 
 Pick the 5 events that best match their interests. For each, write one short, specific sentence explaining why it matches.
+Where it helps, work in a detail from the event's reviews, rating, or who's going (e.g. "18 people are going, and reviewers say beginners never feel out of place").
+Only use reviews and attendee details that appear in the event data; never invent any.
 Only choose from the list. If fewer than 5 are a genuine fit, return fewer.
 Respond with JSON only, no other text, in this shape:
 {"matches": [{"id": <event id>, "reason": "<one sentence>"}]}`;

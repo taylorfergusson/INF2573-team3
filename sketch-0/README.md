@@ -2,7 +2,7 @@
 
 **One thing it does:** a user gives it a list of interests, and it gives back matching local events, each with a one-line reason.
 
-This is a disposable sketch. Events are 25 made-up Toronto samples in `events.json`, not real listings.
+This is a disposable sketch. Events are 25 made-up Toronto samples in `events.json`, not real listings. Their reviews and attendees are fixed fake data too.
 
 ## Run it
 
@@ -32,6 +32,7 @@ To use AI matching:
 - `server.js`: serves the page and sends interests plus events to the AI
 - `public/index.html`, `public/app.js`: the page (text box, button, results)
 - `events.json`: sample event data
+- `strategy.md`: the product strategy the AI is steered by (copied from the repo's `CLAUDE.md`; edit freely)
 
 ## Known gaps (on purpose, for later weeks)
 
