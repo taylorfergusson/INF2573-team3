@@ -8,6 +8,7 @@
 - AI use (disclose): **AI use for research or thinking is allowed and must be disclosed per entry.**
 
 
+
 ## Week 1 – Sept 10
 - Reading → decision: N/A
 - What I did:
