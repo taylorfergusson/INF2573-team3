@@ -1,0 +1,7 @@
+# Never commit API keys
+.env
+**/.env
+
+# System / editor clutter
+.DS_Store
+node_modules/
