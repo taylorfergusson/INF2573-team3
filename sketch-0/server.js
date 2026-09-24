@@ -3,7 +3,9 @@
 
 const http = require("http");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
+const { execFile } = require("child_process");
 
 // --- Load .env (so the API key never lives in the code) ---
 const envPath = path.join(__dirname, ".env");
@@ -19,9 +21,16 @@ const API_KEY = process.env.ANTHROPIC_API_KEY;
 const MODEL = process.env.MODEL || "claude-haiku-4-5-20251001";
 const events = JSON.parse(fs.readFileSync(path.join(__dirname, "events.json"), "utf8"));
 
-// --- AI matching: send interests + event list to the model ---
-async function matchWithAI(interests) {
-  const prompt = `A person in Toronto described their interests as:
+// Is the `claude` command installed? (checked once at startup)
+let claudeCodeAvailable = false;
+try {
+  require("child_process").execFileSync("claude", ["--version"], { stdio: "ignore", timeout: 15000 });
+  claudeCodeAvailable = true;
+} catch {}
+
+// --- The instructions we give the AI ---
+function buildPrompt(interests) {
+  return `A person in Toronto described their interests as:
 "${interests}"
 
 Here is a list of upcoming events (JSON):
@@ -31,7 +40,48 @@ Pick the 5 events that best match their interests. For each, write one short, sp
 Only choose from the list. If fewer than 5 are a genuine fit, return fewer.
 Respond with JSON only, no other text, in this shape:
 {"matches": [{"id": <event id>, "reason": "<one sentence>"}]}`;
+}
 
+// Turn the AI's text answer into full event objects
+function parseMatches(text) {
+  const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+  return json.matches
+    .map((m) => ({ ...events.find((e) => e.id === m.id), reason: m.reason }))
+    .filter((e) => e.title);
+}
+
+// --- Option A (default): ask Claude Code, using your Claude subscription ---
+function matchWithClaudeCode(interests) {
+  return new Promise((resolve, reject) => {
+    execFile(
+      "claude",
+      ["-p", buildPrompt(interests), "--output-format", "json"],
+      { cwd: os.tmpdir(), timeout: 120000, maxBuffer: 10 * 1024 * 1024 },
+      (err, stdout, stderr) => {
+        if (err) {
+          if (err.code === "ENOENT") claudeCodeAvailable = false;
+          return reject(new Error(`Claude Code failed: ${stderr || err.message}`));
+        }
+        let out = null;
+        try {
+          out = JSON.parse(stdout);
+        } catch {}
+        if (out && out.is_error) {
+          return reject(new Error(`Claude Code returned an error: ${out.result || "unknown"}`));
+        }
+        try {
+          resolve(parseMatches(out && typeof out.result === "string" ? out.result : stdout));
+        } catch {
+          reject(new Error("The AI's answer wasn't in the expected format. Try again."));
+        }
+      }
+    );
+  });
+}
+
+// --- Option B: call the Anthropic API directly (only if a key is in .env) ---
+async function matchWithAPI(interests) {
+  const prompt = buildPrompt(interests);
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -48,10 +98,7 @@ Respond with JSON only, no other text, in this shape:
   if (!res.ok) throw new Error(`AI request failed (${res.status}): ${await res.text()}`);
   const data = await res.json();
   const text = data.content.map((c) => c.text || "").join("");
-  const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
-  return json.matches
-    .map((m) => ({ ...events.find((e) => e.id === m.id), reason: m.reason }))
-    .filter((e) => e.title);
+  return parseMatches(text);
 }
 
 // --- Fallback when there's no API key: plain keyword overlap (NOT AI) ---
@@ -77,8 +124,17 @@ const server = http.createServer(async (req, res) => {
       try {
         const { interests } = JSON.parse(body || "{}");
         if (!interests || !interests.trim()) throw new Error("Please enter some interests.");
-        const mode = API_KEY ? "ai" : "keywords";
-        const matches = API_KEY ? await matchWithAI(interests) : matchWithKeywords(interests);
+        let mode, matches;
+        if (API_KEY) {
+          mode = "ai";
+          matches = await matchWithAPI(interests);
+        } else if (claudeCodeAvailable) {
+          mode = "ai";
+          matches = await matchWithClaudeCode(interests);
+        } else {
+          mode = "keywords";
+          matches = matchWithKeywords(interests);
+        }
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ mode, matches }));
       } catch (err) {
@@ -103,5 +159,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Sketch 0 running at http://localhost:${PORT}`);
-  console.log(API_KEY ? `Matching with AI (${MODEL})` : "No ANTHROPIC_API_KEY found — using keyword matching (not AI)");
+  if (API_KEY) console.log(`Matching with AI via the Anthropic API (${MODEL})`);
+  else if (claudeCodeAvailable) console.log("Matching with AI via Claude Code (your Claude subscription)");
+  else console.log("Claude Code not found and no API key — using keyword matching (not AI)");
 });
