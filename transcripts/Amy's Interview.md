@@ -19,13 +19,6 @@
 
 **Overall takeaway:** This person's event attendance is driven by two main motivators (shopping/merch access and social bonding with friends) and gated primarily by two practical constraints (location/convenience and price), with social media as the main discovery channel and friend group interest as the deciding factor.
 
-Want this as a downloadable document (Word/PDF), or is the chat summary enough?
-
-List the opportunities — needs, pains, desires — in this interview. Quote the exact words for each one. Flag anything you inferred but can't quote.
-
-Extracting needs and pains from transcript quotes carefully.
-
-Here's the breakdown, organized by category. Where I inferred something not directly stated, I've marked it clearly rather than attaching a quote to it.
 
 ### Needs
 
@@ -101,6 +94,8 @@ Here's the breakdown, organized by category. Where I inferred something not dire
 - **Inferred pain: Difficulty finding people with niche interests (anime/cosplay) in everyday life.** The user implies this by contrasting conventions with "daily life," but never explicitly says finding people is hard — I'm reading that into the merch/artist comment being repurposed toward a social need.
 - **Inferred desire: Low-effort discovery.** The user's reliance on Instagram/social media posts suggests they want passive discovery (things surfaced to them) rather than actively searching — this is inferred from behavior, not stated as a preference.
 
+
+### Tree
 OUTCOME: Increase repeat attendance & spend at niche fan events (conventions, festivals)
 │
 ├── OPPORTUNITY: Access to independent artists/merch not available elsewhere
