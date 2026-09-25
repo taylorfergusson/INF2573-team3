@@ -1,5 +1,5 @@
 # Informal in class Interview
-### Key points and Tree
+## Key points and Tree
 **Topic:** User research interview about event attendance habits (anime/cosplay conventions and similar events)
 
 **Key points:**
@@ -95,7 +95,7 @@ Here's the breakdown, organized by category. Where I inferred something not dire
 
 ---
 
-### Flagged inferences (no direct quote to support them)
+## Flagged inferences (no direct quote to support them)
 
 - **Inferred need: Social validation/belonging through a niche community.** The user's answers keep circling back to friendship and shared identity (cosplaying together, meeting "enhance"/enthusiasts), suggesting community belonging is a deeper driver than just "making friends" — but this reading is my interpretation, not something they stated outright.
 - **Inferred pain: Difficulty finding people with niche interests (anime/cosplay) in everyday life.** The user implies this by contrasting conventions with "daily life," but never explicitly says finding people is hard — I'm reading that into the merch/artist comment being repurposed toward a social need.
