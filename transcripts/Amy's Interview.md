@@ -96,6 +96,7 @@
 
 
 ### Tree
+```
 OUTCOME: Increase repeat attendance & spend at niche fan events (conventions, festivals)
 │
 ├── OPPORTUNITY: Access to independent artists/merch not available elsewhere
@@ -137,7 +138,7 @@ OUTCOME: Increase repeat attendance & spend at niche fan events (conventions, fe
 │
 └── OPPORTUNITY [assumption — no quote yet]: Difficulty finding people with niche interests in daily life
 └── Year-round community/discussion space (not just event-day), to sustain the relationships formed at events
-
+```
 
 ### Transcript
 So, First off, can you walk me through the last time that you attended an event in the city?
