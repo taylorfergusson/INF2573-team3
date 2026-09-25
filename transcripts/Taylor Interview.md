@@ -95,10 +95,4 @@ Speaker 2  07:15
 Again, location. I don't want to spend too much time on the way, And also financial circumstances, like maybe I'm broke or at the time, or maybe the events take too much. Like the ticket sells like $200. Oh no, that's a big no.
 
 Speaker 1  07:39
-No, that's good. So, yeah. Okay, I guess that's everything then. Thank
-
-Unknown Speaker  07:46
-you so much.
-
-
-Transcribed by https://otter.ai
+No, that's good. So, yeah. Okay, I guess that's everything then. Thank you so much.
