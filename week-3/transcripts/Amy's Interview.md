@@ -141,100 +141,150 @@ OUTCOME: Increase repeat attendance & spend at niche fan events (conventions, fe
 ```
 
 ### Transcript
+
+**Moderator**
 So, First off, can you walk me through the last time that you attended an event in the city?
 
+**Participant**
 Is it like and in the explore turns us?
 
+**Moderator**
 Yeah, for sure.
 
+**Participant**
 Was it Fan Expo?
 
+**Participant**
 Yeah, August.
 
+**Participant**
 And Cosplay.
 
+**Participant**
 So, That's the event.
 
+**Participant**
 I mostly often to attempt, and I feel like most of time My man idea is to buy some merch from that.
 
+**Moderator**
 Okay, So when you went to that event, your main goal was to buy more.
 
+**Moderator**
 Yes, so what made you decide to go to this type of event?
 
+**Participant**
 Feel like daily life.
 
+**Participant**
 There's no then much.
 
+**Participant**
 Artists to sell their products, so that is a place I can find those artists and find them.
 
+**Moderator**
 So, So for this type of event, it would specifically just be to go by.
 
+**Participant**
 The merch also made friends, because yeah, sometimes, where it's a cosplay together and meet friends and substance photos.
 
+**Moderator**
 So, do you usually go to these checks events with friends already, or do you like to go find food?
 
+**Participant**
 So most likely I will go with friends and maybe at a time if I find someone like to listen I.T cosplay and I will also like meet new friends as well.
 
+**Moderator**
 So, what is the most important factors about why you liter technique or what makes you an attending Because I like this?
 
+**Participant**
 And we're like, very simple reason.
 
+**Moderator**
 And Okay.
 
+**Moderator**
 So, like, Do consider things like location, time, money?
 
+**Participant**
 Yeah, that would be Them.
 
+**Participant**
 I think location is both things I will put in first because there are some events that maybe in Waterloo, and I will find that there's too far away.
 
+**Participant**
 It's three to four Drive, and I was at that.
 
+**Participant**
 But by facing downtown.
 
+**Participant**
 I feel like that's pretty convenient for me, just take, and just in Union, so it's pretty convenience.
 
+**Participant**
 And also prices are Vegas reason, because last night I feel like the price is too expensive, and also the price depends on which day your tend to event.
 
+**Participant**
 If it's like, Um, work day, it would be much cheaper than we can.
 
+**Participant**
 So, sometimes I would choose go there in work day.
 
+**Moderator**
 Okay, so what would?
 
+**Moderator**
 What's the most memorable thing about these types of events?
 
+**Participant**
 It's like some pictures to capture that moment and also talk to friends.
 
+**Participant**
 Yeah, and I feel like, um, this is also a really good way to meet new friends as well, and sometimes I won't have a chance to meet all that kind of enhance.
 
+**Moderator**
 Okay, so would you attend more events like this?
 
+**Participant**
 Yeah, for sure.
 
+**Participant**
 Like, usually I would hand every and my explore into it in every year, and I guess the same factors that you mentioned before influencer decision to go.
 
+**Moderator**
 I'm sorry, like you were saying, how like the location is really important to those who would influence your decisions.
 
+**Participant**
 It also surprised.
 
+**Participant**
 I think that is most important.
 
+**Moderator**
 Okay, I've run to the questions on the script, so I'll just keep it sprinkler.
 
+**Moderator**
 I'll just keep asking random ones.
 
+**Moderator**
 So, what other types of events do you like to go to outside of Antioch Conventions?
 
+**Participant**
 Like food festival.
 
+**Participant**
 That would be also one because I want to try different foods, and also that is a really good place to hang out with friends, you can just talk anything to help everyone as well.
 
+**Moderator**
 How do you usually find these type of statements?
 
+**Participant**
 While Instagram or selfish shoe, they would have like a post that just say that, oh, this weekend.
 
+**Moderator**
 And So, how do you decide to actually go to those?
 
+**Participant**
 That's my friends.
 
+**Participant**
 If you want to go with me, so I need someone with me, so it's usually based on if your friends are interested.

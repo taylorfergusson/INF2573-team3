@@ -2,6 +2,13 @@ const button = document.getElementById("go");
 const input = document.getElementById("interests");
 const results = document.getElementById("results");
 const modeNote = document.getElementById("mode");
+const originSelect = document.getElementById("origin");
+const maxSelect = document.getElementById("max-minutes");
+let lastMatches = null; // null until the first search
+
+// Changing where you start from or your limit updates the travel lines without searching again
+originSelect.addEventListener("change", render);
+maxSelect.addEventListener("change", render);
 
 button.addEventListener("click", async () => {
   button.disabled = true;
@@ -35,33 +42,55 @@ button.addEventListener("click", async () => {
 
     modeNote.textContent =
       data.mode === "ai"
-        ? "Matches are picked by an AI model and may be wrong. Events, reviews, organizers, attendees and friends are made-up sample data."
-        : "No AI key set: matching by simple keywords, not AI. Events, reviews, organizers, attendees and friends are made-up sample data.";
+        ? "Matches are picked by an AI model and may be wrong. Events, reviews, organizers, attendees, friends and travel times are made-up sample data."
+        : "No AI key set: matching by simple keywords, not AI. Events, reviews, organizers, attendees, friends and travel times are made-up sample data.";
 
-    if (!data.matches.length) {
-      results.innerHTML = "<p>No matching events found. Try different interests.</p>";
-      return;
-    }
-
-    results.innerHTML = data.matches
-      .map(
-        (e) => `
-        <div class="event">
-          <strong>${escape(e.title)}</strong>
-          <div class="meta">${escape(e.date)} · ${escape(e.neighbourhood)}</div>
-          <div>${escape(e.description)}</div>
-          <div class="reason">Why: ${escape(e.reason)}</div>
-          ${socialProof(e)}
-          <button class="going" data-id="${escape(e.id)}">I'd go</button>
-        </div>`
-      )
-      .join("");
+    lastMatches = data.matches;
+    render();
   } catch (err) {
     results.innerHTML = `<p class="error">${escape(err.message)}</p>`;
   } finally {
     button.disabled = false;
   }
 });
+
+function render() {
+  if (!lastMatches) return;
+  if (!lastMatches.length) {
+    results.innerHTML = "<p>No matching events found. Try different interests.</p>";
+    return;
+  }
+  results.innerHTML = lastMatches
+    .map(
+      (e) => `
+      <div class="event">
+        <strong>${escape(e.title)}</strong>
+        <div class="meta">${escape(e.date)} · ${escape(e.neighbourhood)}</div>
+        ${travelLine(e)}
+        <div>${escape(e.description)}</div>
+        <div class="reason">Why: ${escape(e.reason)}</div>
+        ${socialProof(e)}
+        <button class="going" data-id="${escape(e.id)}">I'd go</button>
+      </div>`
+    )
+    .join("");
+}
+
+// How hard it is to get there from the chosen starting point
+function travelLine(e) {
+  if (!e.travel) return "";
+  const stop = `near ${escape(e.travel.stop)}`;
+  const trip = e.travel.from[originSelect.value];
+  if (!trip) return `<div class="travel">🚇 ${stop} · pick a starting point to see travel time</div>`;
+
+  const max = Number(maxSelect.value) || Infinity;
+  const over = trip.minutes > max;
+  const time = trip.minutes >= 60 ? `${Math.floor(trip.minutes / 60)} h ${trip.minutes % 60} min` : `${trip.minutes} min`;
+  const transfers = trip.transfers === 0 ? "no transfers" : `${trip.transfers} transfer${trip.transfers > 1 ? "s" : ""}`;
+  const easy = !over && trip.minutes <= 30 && trip.transfers === 0 ? `<span class="badge">Transit-easy</span>` : "";
+  const warning = over ? ` · over your ${max} min limit` : "";
+  return `<div class="travel${over ? " over" : ""}">🚇 ~${time} · ${transfers} · ${stop}${warning}${easy}</div>`;
+}
 
 // "I'd go": log interest so we can measure match quality
 results.addEventListener("click", async (ev) => {

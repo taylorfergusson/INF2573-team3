@@ -2,7 +2,7 @@
 
 **One thing it does:** a user gives it a list of interests, and it gives back matching local events, each with a one-line reason.
 
-This is a disposable sketch. Events are 25 made-up Toronto samples in `events.json`, not real listings. Their reviews, organizers, attendees and "your friends" are fixed fake data too.
+This is a disposable sketch. Events are 27 made-up samples in `events.json` (25 in Toronto, one each in Waterloo and Hamilton), not real listings. Their reviews, organizers, attendees, "your friends" and transit times are fixed fake data too.
 
 ## Run it
 
@@ -31,7 +31,7 @@ To use AI matching:
 
 - `server.js`: serves the page and sends interests plus events to the AI
 - `public/index.html`, `public/app.js`: the page (text box, button, results)
-- `events.json`: sample event data, with reviews, organizers, attendees and which attendees are "your friends"
+- `events.json`: sample event data, with reviews, organizers, attendees, which attendees are "your friends", and the nearest stop plus transit minutes and transfers from four starting points
 - `going-log.jsonl`: created when someone clicks "I'd go"; one line per click (not committed)
 - `strategy.md`: the product strategy the AI is steered by (copied from the repo's `CLAUDE.md`; edit freely)
 
@@ -39,4 +39,5 @@ To use AI matching:
 
 - Fake event data. Where real data comes from is a Week 5 feasibility question.
 - The user can't correct, reject, or refine matches yet. That's a human-control question for Weeks 4 and 8.
+- Travel time is only shown, not used for matching: the AI and keyword matching still ignore your starting point and limit, so events over your limit can appear (marked in red).
 - No handling for when the AI picks badly or makes something up. That's for Weeks 6 and 9.
