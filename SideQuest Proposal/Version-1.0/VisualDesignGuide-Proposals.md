@@ -55,6 +55,7 @@ When the two disagree, the **wireframe and spec win on content and behaviour**, 
 | **Dark neon nightlight** | The original direction (dark mode, with a Light mode built in) |
 | **Risograph** | Gig-poster / zine direction |
 | **Glass — Sunset aurora** | Glassmorphism direction |
+| **Ink — Violet hour** | Editorial dark direction with the Sixer AI guide (own set of 9 screens, see below) |
 
 Each style page contains the **same 8 screens**, so directions can be compared like for like:
 
@@ -112,6 +113,26 @@ All screens are 390 × 844 (iPhone 14/15 size) and built with auto layout.
 - Sunset gradient posters with frosted caption panels
 
 **Accessibility note:** glass surfaces can fail contrast when a bright blob sits behind text. The glass tint was darkened for this reason. Always check text contrast over the brightest part of the background.
+
+### Ink — Violet hour
+
+**Mood:** the blue-violet hour just after sunset. Calm, editorial, quietly premium.
+**Inspired by:** editorial dark UI and AI assistant products, with oversized "ghost" type in the background.
+
+- Near-black ink base (`#0E0D12`) with layered charcoal surfaces (`#14121F`, `#1E1D23`, `#2B2A30`)
+- One accent only: periwinkle (`#8B7AFF`), used for highlights, map pins, match scores, and active states
+- Cream (`#F2EFE8`) for primary text and pill buttons, with muted grey (`#9996A3`) for secondary text
+- Bricolage Grotesque ExtraBold headlines, Figtree body text, and DM Mono for small uppercase "eyebrow" labels and data
+- Oversized, low-contrast ghost words behind posters and the landing screen (e.g. "SUNDAY", "KENSINGTON")
+- Grainy violet glows: a soft periwinkle glow around key elements, blurred violet blobs, and a light noise texture on posters
+- Pill buttons and chips, large-radius cards (22 to 34), and frosted (background-blurred) panels over imagery
+- **Sixer**, a glowing violet orb, is the app's only character. It acts as the AI guide ("Ask Sixer") and explains picks ("Why Sixer picked this")
+
+**Screens:** this page uses its own set of 9 screens rather than the shared 8. It adds a **Near You** map, an **Ask Sixer** chat, a **Host Demand Map**, and a **Host Insights** recap ("How it went"), and leaves out Onboarding and Event Day Mode.
+
+**Not yet tokenized:** unlike the other directions, Ink is not a mode in the variable collections and doesn't use the shared text or effect styles. Its colours, fonts, and effects are set directly on each layer. To compare it like for like, add an **Ink** mode to the Color, Typography, and Spacing & Radius collections and bind the screens to it.
+
+**Accessibility note:** grey secondary text and the ghost type sit close to the background in value. Check contrast on small grey text, and keep ghost type decorative only.
 
 ---
 
@@ -232,7 +253,7 @@ Text styles are bound to the typography variables above, so they change automati
 
 Items for team discussion. These are not final.
 
-- [ ] **Pick a primary style direction:** Dark neon, Risograph, Glass, or a hybrid.
+- [ ] **Pick a primary style direction:** Dark neon, Risograph, Glass, Ink, or a hybrid.
 - [ ] **Light mode:** decide whether the chosen direction needs a light mode at launch.
 - [ ] **Accessibility check:** run contrast checks on the chosen direction, especially text over gradients, blobs, and glass.
 - [ ] **Components:** convert repeated elements (buttons, chips, cards, tab bar) into Figma components before the team designs in parallel.
