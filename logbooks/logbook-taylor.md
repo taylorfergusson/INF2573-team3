@@ -39,8 +39,16 @@
     Used it to assist in making the product strategy stronger for updating the sketch, and ot provided guidance on how to use claude code based on prompts like this, suggesting putting the strategy in CLAUDE.md and developing it from there.
 
 ## Week 3 – Sept 24
+*what did you hear that you did not want to hear?*
 - Reading → decision:
+    Based on the opportunity tree reading, we consolidated the key parts of the interviews to establish a
 - What I did:
+    After working with the group to develop interview questions, I moderated an interview with a participant who doesn't really go out much. I transcribed this interview and then asked Claude to generate the key points, needs, pains, desires, and key assumptions not backed by quotes. From this, I made an opportunity tree from each problem, and consolidated it with the one from Amy's interview to find the strongest crossover points.
+
+    It was revealed that both partcipants cared a lot about location, not wanting to travel very far for events, so I asked claude to add location features to sketch-0 to inform the users
 - Systemic reflection:
+    This project so far has had a very fast pace, and I feel like a lot of corners are being cut, which I guess may be the point. With AI speeding up the process and gathering a growing trust in the general population, I think it's becoming more encouraged to just move forward and not fully understand and sit with the information you have. I would have liked to really understand both interviews in and out and discuss opportunities and methods as a team before going to AI assistance. I feel like this may have effects on overall creativity and risk-taking, since having a basis on aggregate data will give you aggregate results. I think I'll need to find more ways to bring my insight into the project and move forward alongside the AI, which I guess I could have been doing more of all along.
 - An honest doubt:
+    With the interviews, we were unable to do a proper screener, and the participants likely would not find much use in our app. They either like very large-scale events or don't go out at all, only being prompted by friends. The last thing I wanted to hear was something along the lines of "I don't really care to go out much". While these insights are good regardless, and mention key points about what encourages people to go out (like celebrities or artists in town) and what barriers prevent them from going out (distance), it may not have the same priority as something said by our ideal user.
 - AI use (disclose):
+    Used Otter.ai for transcription and Claude for the interview synthesis, opportunity tree, and consolidated opportunity tree (from both interviews). I also asked it to suggest potential app features, of which I sorted through and asked it to implement a select few of them to support location-informed search.
