@@ -61,6 +61,7 @@ The screen has three columns:
 |---|---|---|
 | Attendee | Attendee registration | Landing, sign up, vibes, past events, party, location, taste avatar, feed |
 | Attendee | Discover and accept a quest | Feed, quest detail, tickets, Quest Log |
+| Attendee | Find quests on the map | Feed, map, all filters (distance, who's going, interest, when, price), filtered map, quest detail |
 | Attendee | Parties and Crew Blend | Parties, Crew Blend and group vote, locked in |
 | Attendee | Quest Requests | Trending, request a quest, posted, notifications |
 | Attendee | Event day and after | Quest Log, event day mode, attendee chat, rating, collected stories |

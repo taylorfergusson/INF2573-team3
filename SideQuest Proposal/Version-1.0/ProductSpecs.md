@@ -109,7 +109,10 @@ Sidequest
 │   │   ├── For You feed (taste avatar picks)
 │   │   ├── Tonight / This Weekend
 │   │   ├── Browse by vibe & category
-│   │   ├── Map view
+│   │   ├── Map view (quests around your location)
+│   │   │   ├── Pins with match score + friends going
+│   │   │   └── Filters: distance, who's going (friends / party),
+│   │   │                interest (my vibes / Crew Blend / a vibe), when, price
 │   │   └── Search + filters (price, distance, date, indoor/outdoor)
 │   │
 │   ├── Quest Detail (event page)
@@ -227,6 +230,7 @@ Sidequest
 | A5 | Discovery | For You feed | Solo recommendations ranked by match | MVP |
 | A6 | Discovery | Match score | Explains why a quest fits you | MVP |
 | A7 | Discovery | Browse, map, search, filters | Vibe categories, map view, date/price/distance filters | MVP |
+| A23 | Discovery | Map filters | Filter quests on the map by distance from you, friends or party going, interests, time, and price | MVP |
 | A8 | Social | **Crew Blend** | Merges party members' tastes into shared recommendations | Diff |
 | A9 | Social | Group plan polls | Vote on which quest, time, and meet-up spot | MVP |
 | A10 | Social | Party chat | Chat within a party | MVP |

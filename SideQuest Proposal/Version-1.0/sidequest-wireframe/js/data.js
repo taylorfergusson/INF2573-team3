@@ -10,6 +10,16 @@ SQ.VIBES = [
 SQ.AREAS = ['West End', 'Downtown', 'East End', 'Midtown', 'North York', 'Scarborough'];
 SQ.DAYS = ['Tonight', 'Fri', 'Sat', 'Sun'];
 
+// Rough neighbourhood centres on the map, in a 100 x 90 grid (1 unit is about 180 m)
+SQ.AREA_POS = {
+  'North York': [50, 12], 'Scarborough': [85, 20], 'Midtown': [50, 36],
+  'West End': [22, 56], 'Downtown': [50, 62], 'East End': [77, 56]
+};
+
+SQ.defaultMapFilters = () => ({
+  radius: 'Anywhere', who: 'Anyone', interest: 'Any', when: 'Any time', price: 'Any price', selected: null
+});
+
 // Friends found through contact sync, with their taste profiles (used by Crew Blend)
 SQ.FRIENDS = {
   Maya:   ['Techno', 'Indie gigs', 'Art openings', 'Warehouse raves'],
@@ -50,17 +60,17 @@ SQ.initialState = () => ({
     team: [{ email: '', role: 'Editor' }], registered: false
   },
   quests: [
-    { id: 'q1', title: 'Basement Frequencies', host: 'The Garrison', day: 'Fri', time: '11 PM', area: 'West End', price: '$25',
+    { id: 'q1', title: 'Basement Frequencies', host: 'The Garrison', day: 'Fri', time: '11 PM', area: 'West End', price: '$25', pos: [19, 52],
       tags: ['Techno', 'Warehouse raves'], going: ['Maya', 'Jordan'], dayInfo: SQ.defaultDayInfo() },
-    { id: 'q2', title: 'Hand-Me-Down Records Night', host: 'Tranzac Club', day: 'Sat', time: '8 PM', area: 'Downtown', price: '$12',
+    { id: 'q2', title: 'Hand-Me-Down Records Night', host: 'Tranzac Club', day: 'Sat', time: '8 PM', area: 'Downtown', price: '$12', pos: [48, 60],
       tags: ['Indie gigs', 'Live R&B'], going: ['Priya'], dayInfo: SQ.defaultDayInfo() },
-    { id: 'q3', title: 'Rooftop Film Night', host: 'Open Roof', day: 'Sun', time: '7:30 PM', area: 'Downtown', price: '$18',
+    { id: 'q3', title: 'Rooftop Film Night', host: 'Open Roof', day: 'Sun', time: '7:30 PM', area: 'Downtown', price: '$18', pos: [55, 66],
       tags: ['Film nights'], going: [], dayInfo: SQ.defaultDayInfo() },
-    { id: 'q4', title: 'Kamayan Supper Club', host: 'Lamesa Collective', day: 'Sat', time: '7 PM', area: 'East End', price: '$45',
+    { id: 'q4', title: 'Kamayan Supper Club', host: 'Lamesa Collective', day: 'Sat', time: '7 PM', area: 'East End', price: '$45', pos: [70, 49],
       tags: ['Supper clubs'], going: ['Priya'], dayInfo: SQ.defaultDayInfo() },
-    { id: 'q5', title: 'Late Jazz and Dance', host: 'Blue Room', day: 'Tonight', time: '10 PM', area: 'East End', price: 'Free',
+    { id: 'q5', title: 'Late Jazz and Dance', host: 'Blue Room', day: 'Tonight', time: '10 PM', area: 'East End', price: 'Free', pos: [80, 60],
       tags: ['Jazz bars', 'Live R&B'], going: ['Jordan'], dayInfo: SQ.defaultDayInfo() },
-    { id: 'q6', title: 'Open Studio Crawl', host: 'Junction Arts', day: 'Sat', time: '2 PM', area: 'West End', price: 'Free',
+    { id: 'q6', title: 'Open Studio Crawl', host: 'Junction Arts', day: 'Sat', time: '2 PM', area: 'West End', price: 'Free', pos: [28, 62],
       tags: ['Art openings'], going: ['Maya', 'Priya'], dayInfo: SQ.defaultDayInfo(),
       accepted: true, completed: true }
   ],
@@ -98,7 +108,7 @@ SQ.initialState = () => ({
   ],
   currentQuest: 'q1',
   currentRequest: 'r2',
-  filter: 'For You',
+  map: SQ.defaultMapFilters(),
   logTab: 'Upcoming',
   demandArea: 'All',
   draft: null,

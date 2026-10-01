@@ -204,6 +204,25 @@ button.card:hover { background: var(--grey-1); }
 .pin.p1 { left: 38%; top: 72px; }
 .pin.p2 { left: 28%; top: 100px; }
 
+.segmented { display: grid; grid-template-columns: 1fr 1fr; border: var(--line); border-radius: 999px; padding: 3px; gap: 3px; }
+.seg { border: 0; background: none; border-radius: 999px; padding: 7px 0; font-size: 14px; font-weight: 600; }
+.seg.on { background: var(--ink); color: var(--paper); cursor: default; }
+.seg:not(.on):hover { background: var(--grey-1); }
+
+.city-map { position: relative; width: 100%; aspect-ratio: 10 / 9; flex-shrink: 0; border: var(--line); border-radius: 12px; background: var(--grey-1); overflow: hidden; }
+.area-label { position: absolute; transform: translate(-50%, -50%); font-size: 10px; color: var(--grey-3); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; pointer-events: none; }
+.road { position: absolute; background: var(--paper); border: var(--hair); }
+.road.r1 { left: 0; right: 0; top: 52%; height: 8px; }
+.road.r2 { left: 0; right: 0; top: 30%; height: 6px; }
+.road.r3 { top: 0; bottom: 18%; left: 49%; width: 8px; }
+.lake { position: absolute; left: 0; right: 0; bottom: 0; height: 18%; border-top: var(--hair); background: var(--paper); font-size: 11px; color: var(--grey-3); display: flex; align-items: center; justify-content: center; }
+.radius { position: absolute; aspect-ratio: 1; transform: translate(-50%, -50%); border: 1.5px dashed var(--ink); border-radius: 50%; pointer-events: none; }
+.you-pin { position: absolute; transform: translate(-50%, -50%); background: var(--ink); color: var(--paper); font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 999px; border: 2px solid var(--paper); outline: 1.5px solid var(--ink); }
+.qpin { position: absolute; transform: translate(-50%, -100%); border: var(--line); background: var(--paper); border-radius: 999px; padding: 2px 7px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.qpin::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--ink); border-bottom: 0; }
+.qpin.on { background: var(--ink); color: var(--paper); z-index: 2; }
+.qpin-f { border: 1.5px solid currentColor; border-radius: 999px; padding: 0 4px; font-size: 9px; }
+
 .heat { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .heat span { height: 18px; background: var(--ink); border-radius: 3px; }
 .heat-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; color: var(--grey-3); }

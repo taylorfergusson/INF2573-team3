@@ -10,7 +10,7 @@
     A6: 'Match score', A7: 'Browse and filters', A8: 'Crew Blend', A9: 'Group plan polls', A10: 'Party chat',
     A11: 'Quest Requests', A12: 'Request notifications', A13: 'Quest Log', A14: 'Venue map and entrances',
     A15: 'Transit there and home', A16: 'Attendee group chat', A17: 'Find my party', A18: 'Rate a quest',
-    A19: 'Collected stories', A20: 'Follow hosts',
+    A19: 'Collected stories', A20: 'Follow hosts', A23: 'Map with location, social, and interest filters',
     H1: 'Host type and profile', H2: 'Verification', H3: 'External ticketing link', H4: 'Team roles',
     H5: 'Create and publish a quest', H6: 'Event day info setup', H7: 'Duplicate a quest', H8: 'Demand Insights',
     H9: 'Demand heatmap', H10: 'Claim a request', H11: 'Followers and taste segments', H12: 'Party vs. solo attendance',
@@ -46,6 +46,18 @@
         step('quest', 'Quest detail', 'Why this is for you explains the match. Save, send to party, follow the host, or accept.', ['A6', 'A20']),
         step('tickets', 'Get tickets', 'For the MVP, tickets hand off to the host\'s ticketing link (open question in the spec).'),
         step('questlog', 'Quest Log', 'Accepted quests land in Upcoming, with event day mode ready.', ['A13'])
+      ]
+    },
+    {
+      id: 'attendee-map', group: 'Attendee', label: 'Find quests on the map',
+      summary: 'See quests around you on a map and narrow them by distance, friends who are going, interests, time, and price.',
+      setup: (s) => { SQ.ensureAttendee(s); s.map = SQ.defaultMapFilters(); },
+      steps: [
+        step('discover', 'List view', 'Discover has two views of the same quests: List (ranked by match) and Map. Both share the same filter chips, so a filter stays on when you switch views. Tap Map at the top.', ['A5', 'A7', 'A23']),
+        step('map', 'Quests near you', 'Pins sit around your location. Each shows your match score, and letters show friends who are going. Quick chips filter by friends, your vibes, walking distance, or tonight.', ['A7', 'A23']),
+        step('map-filters', 'All filters', 'Distance from you, who\'s going (friends or your party), interest (your vibes, Crew Blend, or one vibe), when, and price. The button shows how many quests match.', ['A23', 'A3', 'A4', 'A8']),
+        step('map', 'Filtered map', 'Only matching quests stay on the map. Tap a pin to preview it, then open it or send it to your party.', ['A23']),
+        step('quest', 'Quest detail', 'The quest page shows how far away it is. Back returns to the map, and List switches back to the feed.', ['A6'])
       ]
     },
     {

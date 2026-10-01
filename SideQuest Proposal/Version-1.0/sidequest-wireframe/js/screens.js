@@ -31,6 +31,8 @@
     Array.from({ length: total }, (_, i) => `<span class="${i < n ? 'done' : ''}"></span>`).join('')}</div>`;
   const avatars = (names) => `<span class="avatars">${names.map((n) => `<span class="av" title="${esc(n)}">${esc(n[0])}</span>`).join('')}</span>`;
   const meter = (pct) => `<span class="meter"><span style="width:${Math.round(pct)}%"></span></span>`;
+  const viewToggle = (active) => `<div class="segmented" role="group" aria-label="View quests as">${[['discover', 'List'], ['map', 'Map']].map(([id, label]) =>
+    `<button class="seg${id === active ? ' on' : ''}" ${id === active ? 'aria-pressed="true"' : `aria-pressed="false" data-go="${id}"`}>${label}</button>`).join('')}</div>`;
   const empty = (text, action = '') => `<div class="empty"><p>${esc(text)}</p>${action}</div>`;
 
   const ATTENDEE_TABS = [['discover', 'Discover'], ['parties', 'Parties'], ['requests', 'Requests'], ['questlog', 'Quest Log'], ['profile', 'Profile']];
@@ -64,6 +66,63 @@
       .sort((a, b) => b.pct - a.pct)
       .slice(0, 4);
   };
+
+  // ---------- map logic ----------
+  // Quests published in the demo have no pos, so place them near their area's centre.
+  SQ.questPos = (q) => {
+    if (q.pos) return q.pos;
+    const [x, y] = SQ.AREA_POS[q.area] || SQ.AREA_POS['West End'];
+    const n = q.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return [x + ((n % 3) - 1) * 5, y + ((n % 2) ? 4 : -4)];
+  };
+  SQ.userPos = (s) => {
+    const [x, y] = SQ.AREA_POS[s.user.area] || SQ.AREA_POS['West End'];
+    return [x + 2, y + 3];
+  };
+  SQ.distanceKm = (s, q) => {
+    const [ux, uy] = SQ.userPos(s);
+    const [qx, qy] = SQ.questPos(q);
+    return Math.round(Math.hypot(qx - ux, qy - uy) * 0.18 * 10) / 10;
+  };
+  SQ.MAP_RADIUS = { Walkable: 2, 'Short ride': 6 };
+  SQ.MAP_DEFAULTS = SQ.defaultMapFilters();
+  SQ.MAP_FILTER_KEYS = ['radius', 'who', 'interest', 'when', 'price'];
+  SQ.mapActiveCount = (s) => SQ.MAP_FILTER_KEYS.filter((k) => s.map[k] !== SQ.MAP_DEFAULTS[k]).length;
+
+  SQ.mapResults = (s) => {
+    const m = s.map;
+    const blend = SQ.crewBlend(s).map((b) => b.vibe);
+    return s.quests.filter((q) => {
+      if (q.completed) return false;
+      if (SQ.MAP_RADIUS[m.radius] && SQ.distanceKm(s, q) > SQ.MAP_RADIUS[m.radius]) return false;
+      if (m.who === 'Friends going' && !q.going.length) return false;
+      if (m.who === 'My party going' && !q.going.some((f) => s.party.members.includes(f))) return false;
+      if (m.interest === 'My vibes' && !q.tags.some((t) => s.user.vibes.includes(t))) return false;
+      if (m.interest === 'Crew Blend' && !q.tags.some((t) => blend.includes(t))) return false;
+      if (SQ.VIBES.includes(m.interest) && !q.tags.includes(m.interest)) return false;
+      if (m.when === 'Tonight' && q.day !== 'Tonight') return false;
+      if (m.when === 'This weekend' && !['Fri', 'Sat', 'Sun'].includes(q.day)) return false;
+      if (m.price === 'Free' && q.price !== 'Free') return false;
+      if (m.price === 'Under $20' && q.price !== 'Free' && parseFloat(q.price.replace('$', '')) >= 20) return false;
+      return true;
+    }).sort((a, b) => SQ.distanceKm(s, a) - SQ.distanceKm(s, b));
+  };
+
+  const discoverBell = (s) => {
+    const unread = s.notifications.filter((n) => !n.read).length;
+    return `<button class="icon-btn" data-go="notifications" aria-label="Notifications">&#9675;${unread ? `<span class="dot">${unread}</span>` : ''}</button>`;
+  };
+
+  // Shared by List and Map, so filters carry over when switching views.
+  const filterRow = (s) => {
+    const active = SQ.mapActiveCount(s);
+    const quick = [['Friends going', 'who:Friends going'], ['My vibes', 'interest:My vibes'], ['Walkable', 'radius:Walkable'], ['Tonight', 'when:Tonight']];
+    return `<div class="chips scroll-x">
+      ${chip(`Filters${active ? ` (${active})` : ''}`, active > 0, { 'data-go': 'map-filters' })}
+      ${quick.map(([label, arg]) => { const [k, v] = arg.split(':'); return chip(label, s.map[k] === v, { 'data-act': 'mapSet', 'data-arg': arg }); }).join('')}
+    </div>`;
+  };
+  const noMatches = () => empty('No quests match these filters.', `${btn('Clear filters', { 'data-act': 'mapClear' }, 'secondary')}${btn('Request one instead', { 'data-go': 'request-new' }, 'secondary')}`);
 
   const questCard = (s, q, big = false) => `
     <button class="card quest-card${big ? ' big' : ''}" data-act="openQuest" data-arg="${q.id}">
@@ -175,20 +234,15 @@
 
   /* ===== Attendee features ===== */
   S.discover = { role: 'attendee', render: (s) => {
-    const unread = s.notifications.filter((n) => !n.read).length;
-    let list = s.quests.filter((q) => !q.completed);
-    if (s.filter === 'Tonight') list = list.filter((q) => q.day === 'Tonight');
-    if (s.filter === 'This weekend') list = list.filter((q) => ['Fri', 'Sat', 'Sun'].includes(q.day));
-    if (s.filter === 'Free') list = list.filter((q) => q.price === 'Free');
-    list = list.slice().sort((a, b) => SQ.matchScore(s, b) - SQ.matchScore(s, a));
-    const right = `<button class="icon-btn" data-go="notifications" aria-label="Notifications">&#9675;${unread ? `<span class="dot">${unread}</span>` : ''}</button>`;
+    const list = SQ.mapResults(s).sort((a, b) => SQ.matchScore(s, b) - SQ.matchScore(s, a));
+    const right = discoverBell(s);
     return screen(`
       <div class="pad stack">
-        <div class="chips scroll-x">${['For You', 'Tonight', 'This weekend', 'Free'].map((f) => chip(f, s.filter === f, { 'data-act': 'setFilter', 'data-arg': f })).join('')}
-          ${chip('Map view', false, { 'data-act': 'toast', 'data-arg': 'Map view shows these quests as pins. Not built in the wireframe.' })}</div>
-        ${list.length ? questCard(s, list[0], true) : empty('No quests match this filter yet.', btn('Request one instead', { 'data-go': 'request-new' }, 'secondary'))}
+        ${viewToggle('discover')}
+        ${filterRow(s)}
+        ${list.length ? questCard(s, list[0], true) : noMatches()}
         ${list.length > 1 ? `<h3>More for you</h3>${list.slice(1).map((q) => questCard(s, q)).join('')}` : ''}
-      </div>`, { title: 'For You', back: false, right, tabbar: tabs(ATTENDEE_TABS, 'discover') });
+      </div>`, { title: 'Discover', back: false, right, tabbar: tabs(ATTENDEE_TABS, 'discover') });
   } };
 
   S.quest = { role: 'attendee', render: (s) => {
@@ -201,7 +255,7 @@
       <div class="pad stack">
         ${q.fromRequest ? '<span class="badge solid">Made from a Quest Request</span>' : ''}
         <h2>${esc(q.title)}</h2>
-        <p class="muted">${esc(q.day)}, ${esc(q.time)} in ${esc(q.area)}. ${esc(q.price)}</p>
+        <p class="muted">${esc(q.day)}, ${esc(q.time)} in ${esc(q.area)}, ${SQ.distanceKm(s, q)} km away. ${esc(q.price)}</p>
         <div class="card stack">
           <strong>${SQ.matchScore(s, q)}% match</strong>
           <span class="small">Why this is for you: ${why.length ? `you picked ${esc(why.join(' and '))}` : 'it\'s popular with people like you'}${friends.length ? `, and ${esc(friends.join(' and '))} from your party ${friends.length > 1 ? 'are' : 'is'} going` : ''}.</span>
@@ -218,6 +272,75 @@
           ? `<p class="small center-text">You accepted this quest.</p>${btn('Open Quest Log', { 'data-go': 'questlog' }, 'secondary')}`
           : btn(`Accept quest (${q.price})`, { 'data-act': 'accept' })}
       </div>`, { title: 'Quest' });
+  } };
+
+  S.map = { role: 'attendee', render: (s) => {
+    const m = s.map;
+    const list = SQ.mapResults(s);
+    const sel = list.find((q) => q.id === m.selected);
+    const [ux, uy] = SQ.userPos(s);
+    const km = SQ.MAP_RADIUS[m.radius];
+    const at = ([x, y]) => `left:${x}%;top:${(y / 90) * 100}%`;
+    const pins = list.map((q) => {
+      const friends = q.going.filter((f) => SQ.FRIENDS[f]);
+      return `<button class="qpin${q.id === m.selected ? ' on' : ''}" style="${at(SQ.questPos(q))}" data-act="mapSelect" data-arg="${q.id}"
+        aria-pressed="${q.id === m.selected}" aria-label="${esc(q.title)}, ${SQ.matchScore(s, q)}% match${friends.length ? ', ' + esc(friends.join(' and ')) + ' going' : ''}">
+        ${SQ.matchScore(s, q)}%${friends.length ? `<span class="qpin-f" aria-hidden="true">${esc(friends.map((f) => f[0]).join(''))}</span>` : ''}</button>`;
+    }).join('');
+    const row = (q) => `
+      <button class="card row" data-act="openQuest" data-arg="${q.id}">
+        <span class="stack-tight left-text"><strong class="small">${esc(q.title)}</strong>
+          <span class="small muted">${SQ.distanceKm(s, q)} km. ${esc(q.day)}, ${esc(q.time)}. ${esc(q.price)}</span>
+          ${q.going.length ? `<span class="small">${avatars(q.going)} ${esc(q.going.join(', '))} going</span>` : ''}</span>
+        <span class="badge">${SQ.matchScore(s, q)}%</span>
+      </button>`;
+    return screen(`
+      <div class="pad stack">
+        ${viewToggle('map')}
+        ${filterRow(s)}
+        <div class="city-map" aria-label="Map of quests near you">
+          ${Object.entries(SQ.AREA_POS).map(([a, [x, y]]) => `<span class="area-label" style="${at([x, y > 45 ? y + 9 : y])}">${esc(a)}</span>`).join('')}
+          <span class="road r1"></span><span class="road r2"></span><span class="road r3"></span>
+          <span class="lake">Lake Ontario</span>
+          ${km ? `<span class="radius" style="${at([ux, uy])};width:${(2 * km / 0.18)}%"></span>` : ''}
+          <span class="you-pin" style="${at([ux, uy])}" title="You">You</span>
+          ${pins}
+        </div>
+        <p class="small muted">Near you in ${esc(s.user.area || 'West End')}. Pins show your match. Letters show friends who are going.</p>
+        ${sel ? `
+          <section class="card stack">
+            <div class="row top"><span class="stack-tight left-text"><strong>${esc(sel.title)}</strong>
+              <span class="small muted">${esc(sel.host)}. ${SQ.distanceKm(s, sel)} km away. ${esc(sel.day)}, ${esc(sel.time)}. ${esc(sel.price)}</span></span>
+              <span class="badge solid">${SQ.matchScore(s, sel)}%</span></div>
+            ${sel.going.length ? `<span class="small">${avatars(sel.going)} ${esc(sel.going.join(', '))} going</span>` : ''}
+            <div class="row gap">
+              ${btn('Open quest', { 'data-act': 'openQuest', 'data-arg': sel.id })}
+              ${btn('Send to party', { 'data-act': 'mapSendToParty', 'data-arg': sel.id }, 'secondary')}
+            </div>
+          </section>` : ''}
+        ${list.length
+          ? `<h3>${list.length} ${list.length === 1 ? 'quest' : 'quests'}, closest first</h3>${list.map(row).join('')}`
+          : noMatches()}
+      </div>`, { title: 'Discover', back: false, right: discoverBell(s), tabbar: tabs(ATTENDEE_TABS, 'discover') });
+  } };
+
+  S['map-filters'] = { role: 'attendee', render: (s) => {
+    const m = s.map;
+    const n = SQ.mapResults(s).length;
+    const group = (title, key, options, hint = '') => `
+      <h3>${esc(title)}</h3>
+      ${hint ? `<p class="small muted">${esc(hint)}</p>` : ''}
+      <div class="chips">${options.map((o) => chip(o, m[key] === o, { 'data-act': 'mapSet', 'data-arg': key + ':' + o })).join('')}</div>`;
+    return screen(`
+      <div class="pad stack">
+        ${group('Distance', 'radius', ['Walkable', 'Short ride', 'Anywhere'], `From your location in ${s.user.area || 'West End'}. Walkable is under 2 km, a short ride is under 6 km.`)}
+        ${group('Who\'s going', 'who', ['Anyone', 'Friends going', 'My party going'])}
+        ${group('Interest', 'interest', ['Any', 'My vibes', 'Crew Blend', ...SQ.VIBES], 'My vibes uses your taste avatar. Crew Blend uses your party\'s shared taste.')}
+        ${group('When', 'when', ['Any time', 'Tonight', 'This weekend'])}
+        ${group('Price', 'price', ['Any price', 'Free', 'Under $20'])}
+        ${btn(n ? `Show ${n} ${n === 1 ? 'quest' : 'quests'}` : 'No quests match', { 'data-back': '' })}
+        <button class="link" data-act="mapClear">Clear all filters</button>
+      </div>`, { title: 'Filters' });
   } };
 
   S.tickets = { role: 'attendee', render: (s) => {

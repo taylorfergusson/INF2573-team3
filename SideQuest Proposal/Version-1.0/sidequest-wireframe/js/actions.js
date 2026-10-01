@@ -53,7 +53,6 @@
   A.finishOnboarding = (s) => { s.user.registered = true; if (!s.user.name) s.user.name = 'Alex'; return 'discover'; };
 
   // ----- discover and quests -----
-  A.setFilter = (s, f) => { s.filter = f; };
   A.openQuest = (s, id) => { s.currentQuest = id; return 'quest'; };
   A.follow = (s, h, ctx) => { toggle(s.user.following, h); ctx.toast(s.user.following.includes(h) ? `Following ${h}` : `Unfollowed ${h}`); };
   A.toggleSave = (s, arg, ctx) => { const q = quest(s, s.currentQuest); q.saved = !q.saved; ctx.toast(q.saved ? 'Saved to your Quest Log' : 'Removed from saved'); };
@@ -65,6 +64,18 @@
     ctx.toast(`Sent to ${s.party.name}. It's in the group vote.`);
     return 'party';
   };
+
+  // ----- map -----
+  // Tapping an active filter again turns it back off.
+  A.mapSet = (s, arg) => {
+    const i = arg.indexOf(':');
+    const k = arg.slice(0, i), v = arg.slice(i + 1);
+    s.map[k] = s.map[k] === v ? SQ.defaultMapFilters()[k] : v;
+    s.map.selected = null;
+  };
+  A.mapClear = (s, arg, ctx) => { s.map = SQ.defaultMapFilters(); ctx.toast('Filters cleared'); };
+  A.mapSelect = (s, id) => { s.map.selected = s.map.selected === id ? null : id; };
+  A.mapSendToParty = (s, id, ctx) => { s.currentQuest = id; return A.sendToParty(s, null, ctx); };
 
   // ----- parties -----
   A.addToPoll = (s, id) => { if (!(id in s.party.poll)) s.party.poll[id] = 0; s.party.locked = null; };
