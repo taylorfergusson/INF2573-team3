@@ -6,5 +6,15 @@
 .DS_Store
 node_modules/
 
-# Sketch 0 "I'd go" click log (local test data)
+# Sketch 0 local logs (test data): "I'd go" taps, "did you go?" answers, searches,
+# "not for me" feedback, and Quest Requests (started from sample-requests.json)
 **/going-log.jsonl
+**/attended-log.jsonl
+**/search-log.jsonl
+**/feedback-log.jsonl
+sketch-0/requests.json
+
+# Sketch 1 database (created from sketch-1/seed on first run)
+sketch-1/data/
+# Sketch 1 importer's download cache
+sketch-1/import/.cache/
