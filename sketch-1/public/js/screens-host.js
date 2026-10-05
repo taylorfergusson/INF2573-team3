@@ -168,7 +168,7 @@
           const st = statOf(e.id);
           return `<div class="card tight stack-sm">
             <div class="row start" style="gap:12px">${poster(e, "thumb")}
-              <span class="stack-xs grow"><span class="row"><span class="label">${esc(whenLabel(e))}</span>${isDone(e) ? '<span class="badge">Past</span>' : '<span class="badge lime">Live</span>'}</span>
+              <span class="stack-xs grow">${SQ.whenRow(e)}
               <strong>${esc(e.title)}</strong><span class="small muted">${priceLabel(e)}${st ? ` · ${st.interested} accepted · ${st.went} went` : ""}</span></span></div>
             <div class="btn-row">
               ${isDone(e) ? btn("View recap", { "data-act": "openRecap", "data-arg": e.id }, "secondary sm", "chart") : btn("Event day tools", { "data-act": "openCheckin", "data-arg": e.id }, "secondary sm", "door")}

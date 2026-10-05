@@ -76,7 +76,7 @@ window.SQ = window.SQ || {};
     "Anime & cosplay": "star", Outdoors: "tree", "Run & ride": "bike", Climbing: "peak", "Games & social": "dice",
   };
 
-  // ---------- Posters: the listing's own photo or poster, in greyscale; "N/A" when it has none ----------
+  // ---------- Posters: the listing's own photo or poster, in colour; "N/A" when it has none ----------
   const hash = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   function poster(e, cls = "", { style = "" } = {}) {
     if (e.image) return `<div class="poster has-img ${cls}" style="background-image:url('${esc(e.image)}');${style}" role="img" aria-label="${esc(`Image for ${e.title}`)}"></div>`;
@@ -155,6 +155,11 @@ window.SQ = window.SQ || {};
     const l = me() && me().log[e.id];
     return e.over || e.ended || !!(l && l.over);
   }
+  // Three states: past, happening now (started but not over), or upcoming (the default, no badge)
+  const eventStatus = (e) => (isPast(e) ? "past" : Date.parse(e.startsAt) <= now().getTime() ? "now" : "upcoming");
+  const statusBadge = (e) => ({ past: '<span class="badge">Past</span>', now: '<span class="badge live">Happening now</span>' })[eventStatus(e)] || "";
+  // The date label with its status badge beside it
+  const whenRow = (e) => `<span class="row start" style="gap:8px;flex-wrap:wrap"><span class="label" style="letter-spacing:.04em">${esc(whenLabel(e))}</span>${statusBadge(e)}</span>`;
 
-  Object.assign(SQ, { esc, attr, icon, VIBE_ICON, poster, avatar, avatars, bar, btn, chip, field, textarea, progress, meter, empty, stars, tabs, screen, thinking, aiLabel, aiTag, me, ev, req, now, whenLabel, isToday, isWeekend, priceLabel, trip, tripLabel, originShort, pick, partyNames, partyGoing, isPast, hash });
+  Object.assign(SQ, { esc, attr, icon, VIBE_ICON, poster, avatar, avatars, bar, btn, chip, field, textarea, progress, meter, empty, stars, tabs, screen, thinking, aiLabel, aiTag, me, ev, req, now, whenLabel, isToday, isWeekend, priceLabel, trip, tripLabel, originShort, pick, partyNames, partyGoing, isPast, eventStatus, statusBadge, whenRow, hash });
 })();

@@ -75,6 +75,7 @@
 ## Week 5 – Oct 8
 - Reading → decision:
 - What I did:
+    This week, I made sure to fully go through my team's prototypes and documents so I would be familiar with their versions and how they got there. There's still a lot going on and a lot to account for, but that's the cost of this project!
 - Systemic reflection:
 - An honest doubt:
 - AI use (disclose):

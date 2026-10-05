@@ -3,7 +3,7 @@
    Inputs use data-bind="path" to write straight into SQ.u (UI state), so typing survives re-renders. */
 (function () {
   const SQ = window.SQ;
-  const { esc, icon, poster, avatar, avatars, btn, chip, field, progress, meter, empty, stars, tabs, screen, thinking, aiTag, me, ev, req, whenLabel, isToday, isWeekend, priceLabel, trip, tripLabel, originShort, pick, partyGoing, isPast } = SQ;
+  const { esc, icon, poster, avatar, avatars, btn, chip, field, progress, meter, empty, stars, tabs, screen, thinking, aiTag, me, ev, req, whenLabel, isToday, isWeekend, priceLabel, trip, tripLabel, originShort, pick, partyGoing, isPast, statusBadge, whenRow } = SQ;
 
   const V = () => SQ.d.vocab;
   const U = () => SQ.u;
@@ -53,7 +53,7 @@
     const p = pick(e);
     return `<button class="feature-card" data-act="openQuest" data-arg="${e.id}">
       <div style="position:relative">${poster(e)}
-        <div class="fc-top">${matchBadge(e)}<span class="badge" style="background:rgba(0,0,0,.85);color:#fff">${esc(whenLabel(e))}</span></div></div>
+        <div class="fc-top">${matchBadge(e)}${statusBadge(e)}<span class="badge" style="background:rgba(0,0,0,.85);color:#fff">${esc(whenLabel(e))}</span></div></div>
       <div class="fc-body">
         <h2 class="title">${esc(e.title)}</h2>
         <span class="small muted">${metaLine(e)}</span>
@@ -68,7 +68,7 @@
     return `<button class="quest-row" data-act="${host ? "openHostQuest" : "openQuest"}" data-arg="${e.id}">
       ${poster(e, "thumb")}
       <span class="stack-xs grow">
-        <span class="label" style="letter-spacing:.04em">${esc(whenLabel(e))}</span>
+        ${whenRow(e)}
         <strong class="ellipsis">${esc(e.title)}</strong>
         <span class="small muted ellipsis">${p ? esc(p.reason) : metaLine(e)}</span>
         ${extra}
@@ -314,7 +314,7 @@
           const e = ev(m.id);
           return `<div class="card tight stack-sm">
             <button class="row start" style="gap:12px;text-align:left" data-act="openQuest" data-arg="${e.id}">${poster(e, "thumb")}
-              <span class="stack-xs grow"><span class="label">${esc(whenLabel(e))}</span><strong>${esc(e.title)}</strong><span class="small muted">${metaLine(e)}</span></span>
+              <span class="stack-xs grow">${whenRow(e)}<strong>${esc(e.title)}</strong><span class="small muted">${metaLine(e)}</span></span>
               <span class="match-num">${m.match}%</span></button>
             <p class="reason">${icon("sparkle", "sm")}${esc(m.reason)}</p>
             <div class="row"><button class="link muted" data-act="notForMe" data-arg="${e.id}">${icon("thumbDown", "sm")}Not for me</button><button class="link" data-act="openQuest" data-arg="${e.id}">See quest ${icon("chev", "sm")}</button></div>
@@ -366,7 +366,7 @@
           </span>
         </div>
         <div class="poster-overlay stack-sm">
-          <span class="row start" style="gap:6px">${p ? `<span class="badge match">${p.match}% match</span>` : ""}<span class="badge" style="background:rgba(0,0,0,.85);color:#fff">${esc(e.scene)}</span></span>
+          <span class="row start" style="gap:6px">${p ? `<span class="badge match">${p.match}% match</span>` : ""}${statusBadge(e)}<span class="badge" style="background:rgba(0,0,0,.85);color:#fff">${esc(e.scene)}</span></span>
           <h1>${esc(e.title)}</h1>
         </div>
       </div>
@@ -487,7 +487,7 @@
         const inVote = p.poll.includes(e.id);
         return `<div class="card tight stack-sm">
           <button class="row start" style="gap:12px;text-align:left" data-act="openQuest" data-arg="${e.id}">${poster(e, "mini")}
-            <span class="stack-xs grow"><strong class="ellipsis">${esc(e.title)}</strong><span class="small muted">${esc(whenLabel(e))} · ${priceLabel(e)}</span></span><span class="match-num">${m.match}%</span></button>
+            <span class="stack-xs grow"><strong class="ellipsis">${esc(e.title)}</strong><span class="small muted">${esc(whenLabel(e))} · ${priceLabel(e)}</span>${statusBadge(e)}</span><span class="match-num">${m.match}%</span></button>
           <p class="reason">${icon("sparkle", "sm")}${esc(m.reason)}</p>
           ${m.fits ? `<div class="stack-xs">${Object.entries(m.fits).map(([who, why]) => { const tr = trip(e, who === myName ? u.origin : (SQ.d.friends[who] || {}).origin); return `<span class="row start small" style="gap:8px">${avatar(who)}<span class="${why ? "" : "muted"}">${esc(why || "Not really their thing")}${tr ? ` <span class="muted">· ${tr.minutes} min</span>` : ""}</span></span>`; }).join("")}</div>` : ""}
           ${chip(inVote ? "In the vote" : "Add to vote", inVote, { "data-act": "addToVote", "data-arg": e.id }, inVote ? "check" : "plus")}
@@ -624,7 +624,7 @@
           </div>`
         : `<div class="card tight stack-sm">
             <button class="row start" style="gap:12px;text-align:left" data-act="openQuest" data-arg="${e.id}">${poster(e, "thumb")}
-              <span class="stack-xs grow"><span class="label">${esc(whenLabel(e))}</span><strong>${esc(e.title)}</strong><span class="small muted">${esc(e.neighbourhood)}${partyGoing(e).length ? ` · with ${esc(partyGoing(e).join(", "))}` : ""}</span></span></button>
+              <span class="stack-xs grow">${whenRow(e)}<strong>${esc(e.title)}</strong><span class="small muted">${esc(e.neighbourhood)}${partyGoing(e).length ? ` · with ${esc(partyGoing(e).join(", "))}` : ""}</span></span></button>
             <div class="btn-row">${btn("Event day", { "data-act": "openEventDay", "data-arg": e.id }, "primary sm", "door")}${btn("Details", { "data-act": "openQuest", "data-arg": e.id }, "secondary sm")}</div>
             <button class="link muted" data-act="skipToAfter" data-arg="${e.id}">Demo: skip to after the event</button>
           </div>`).join("") : empty("calendar", "No quests accepted yet.", btn("Find a quest", { "data-go": "discover" }, "secondary", "compass"));

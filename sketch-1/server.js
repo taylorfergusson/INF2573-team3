@@ -54,15 +54,10 @@ function travelFor(area) {
 }
 
 // ---------- The sketch's clock ----------
-// The sample events run Oct 1–25, 2026. If you open the sketch after they've all passed,
-// the clock pins to Oct 1, 2026 at noon so the app still has something to show.
-const DEMO_START = new Date("2026-10-01T12:00:00-04:00");
-function now() {
-  const real = new Date();
-  const last = Math.max(...db.data.events.map((e) => Date.parse(e.startsAt)));
-  return real.getTime() > last ? DEMO_START : real;
-}
-const isOver = (e) => now().getTime() > Date.parse(e.startsAt) + 2 * 3600 * 1000; // over 2 hours after it starts
+// Real time: an event has passed once it ends (or, with no end time listed, 2 hours after it starts).
+const now = () => new Date();
+const endsAt = (e) => (e.endsAt ? Date.parse(e.endsAt) : Date.parse(e.startsAt) + 2 * 3600 * 1000);
+const isOver = (e) => now().getTime() > endsAt(e);
 
 // ---------- Helpers ----------
 const newId = () => crypto.randomBytes(6).toString("hex");
@@ -237,7 +232,9 @@ function eventsPayload() {
     const d = db.data;
     const goingCounts = {};
     for (const g of d.logs.going) if (!g.sample) goingCounts[g.eventId] = (goingCounts[g.eventId] || 0) + 1;
-    const json = JSON.stringify({ version, events: d.events.map((e) => ({ ...e, going: (e.going || 0) + (goingCounts[e.id] || 0), over: isOver(e), ended: !!e.ended })) });
+    // Passed events are left out, except ones someone has in their Quest Log or a host published (for ratings and recaps)
+    const kept = new Set(Object.values(d.users).flatMap((u) => Object.keys(u.log || {})).map(Number));
+    const json = JSON.stringify({ version, events: d.events.filter((e) => !isOver(e) || e.ended || e.publishedBy || kept.has(e.id)).map((e) => ({ ...e, going: (e.going || 0) + (goingCounts[e.id] || 0), over: isOver(e), ended: !!e.ended })) });
     eventsCache = { version, json, gzip: zlib.gzipSync(json) };
   }
   return eventsCache;
@@ -890,7 +887,6 @@ server.listen(PORT, () => {
   if (m === "api") console.log(`Matching with AI via the Anthropic API (${ai.MODEL})`);
   else if (m === "claude-code") console.log("Matching with AI via Claude Code (your Claude subscription)");
   else console.log("Claude Code not found and no API key — using keyword matching (not AI)");
-  if (now() === DEMO_START) console.log("All events are in the past, so the sketch's clock is pinned to Oct 1, 2026. Run `node import/run.js` for fresh listings.");
   const upcoming = db.data.events.filter((e) => !isOver(e));
   console.log(`${upcoming.length} upcoming events in the database (imported ${db.data.eventsImportedAt})`);
 });

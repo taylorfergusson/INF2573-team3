@@ -264,7 +264,7 @@ button.card { display: block; text-align: left; }
 
 /* Posters: generated art standing in for event imagery (not tokenized, per the guide) */
 .poster { position: relative; overflow: hidden; border-radius: var(--radius-lg); background-color: #15121f; isolation: isolate; flex: none; }
-.poster.has-img { background-size: cover; background-position: center; filter: grayscale(1); }
+.poster.has-img { background-size: cover; background-position: center; }
 /* No artwork on the listing: a plain grey box that says so */
 .poster.no-img { background: #3a3a3a; color: #f2f2f2; display: grid; place-items: center; }
 .poster.no-img .na { font-size: var(--size-body-s); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
