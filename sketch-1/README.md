@@ -69,6 +69,16 @@ Budget and travel limits are applied **before** the AI sees anything, and only e
 
 One JSON file, `data/db.json`, created from the files in `seed/` the first time you run the server. Every change is written straight back, so restarts keep everything. It holds attendee and host accounts, parties (members, votes, chat), events (samples plus anything hosts publish), Quest Requests, notifications, host updates, event chat, check-ins, and the logs hosts' numbers come from: searches (with unmet interests), "Accept quest" taps, "Did you go?" answers and ratings, and "not for me" taps. **Reset all data** in the side panel (or deleting `data/`) starts over. `data/` is not committed.
 
+**Supabase (for a deployed server).** Hosts like Render wipe `data/` on every deploy, so the same database can live in [Supabase](https://supabase.com) instead (still no `npm install`: it uses Supabase's REST API):
+
+1. Create a Supabase project and run `supabase/schema.sql` in its SQL Editor.
+2. Add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (Project Settings → API; the secret key, not the anon key) to `.env`, or to your host's environment variables.
+3. Run `node server.js`. It prints `Database: Supabase`, and the first run fills Supabase from `seed/`.
+
+Events are stored one row each, and everything else is one `app_state` row, so a tap only re-sends what changed. Run one server at a time: each keeps the data in memory. Without the keys, everything works from `data/db.json` as before.
+
+**Analytics.** Every tap, screen view and AI call is also recorded as one row in the `analytics_events` table (or `data/analytics.jsonl` without Supabase keys), for the launch questions: confirmed attendance and ratings by week, the funnel from signup to rating, retention, which recommendations lead to accepts, AI speed and fallbacks, and what happens to Quest Requests. `supabase/analytics-queries.sql` has a query for each; paste them into Supabase's SQL Editor. Rows hold ids, choices and counts only, never names, emails, chat or search text. Demo shortcuts (`demo: true`) and failed taps (`ok: false`) are recorded but left out of the queries.
+
 Your browser only remembers which attendee and host account are yours (and your theme). There are no passwords; anyone on the same server can act as any host from the sample list.
 
 ## What's honest about the numbers
@@ -79,7 +89,9 @@ Sketch 0's rule carries over: tapping **Accept quest** is intent only. After the
 
 - `server.js`: the web server, every action the app can take, budget and travel limits, the host report (Demand Insights, recaps, audience), and the AI endpoints
 - `lib/ai.js`: the three AI backends, the four prompts, and the keyword fallbacks
-- `lib/db.js`: the JSON database, and the sample friends' taste profiles
+- `lib/db.js`: the database (Supabase when its keys are in `.env`, otherwise `data/db.json`), and the sample friends' taste profiles
+- `supabase/schema.sql`: the tables to create in Supabase
+- `lib/analytics.js`, `supabase/analytics-queries.sql`: launch analytics, and the queries that read them
 - `seed/`: imported real events (`events.json`) and the starting Quest Requests
 - `import/`: the importer (`run.js`), one file per source in `import/sources/` (DICE, Eventbrite, Meetup, Luma, City of Toronto, Ticketmaster), `normalize.js` (vibes, neighbourhoods, subway trip times) and `fetch.js` (polite, cached downloads)
 - `public/index.html`, `public/styles.css`: the phone shell, side panel and design tokens

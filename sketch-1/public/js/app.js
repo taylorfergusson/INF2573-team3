@@ -61,11 +61,22 @@
     theme: store.get("sq1.theme") || "system",
   };
 
+  // A random id for this browser tab, so analytics can count visits (it isn't tied to who you are)
+  const sessionId = (() => {
+    try {
+      let s = sessionStorage.getItem("sq1.session");
+      if (!s) sessionStorage.setItem("sq1.session", (s = Math.random().toString(36).slice(2, 12)));
+      return s;
+    } catch {
+      return null;
+    }
+  })();
+
   // ---------- Server ----------
   async function request(url, body) {
     let res;
     try {
-      res = await fetch(url, body === undefined ? undefined : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      res = await fetch(url, body === undefined ? undefined : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...body, sessionId }) });
     } catch {
       throw new Error("Can't reach the server. Is `node server.js` running?");
     }
@@ -174,9 +185,17 @@
     if (!SQ.d.user.registered && ROOTS.includes(id)) return "ob-vibes";
     return id;
   }
+  // Analytics: which screens people reach, and from where (fire and forget)
+  const QUEST_SCREENS = ["quest", "tickets", "rate", "eventday", "eventday-chat"];
+  function trackScreen(screen, from) {
+    const body = { user: ids.user, host: ids.host, sessionId, screen, from, eventId: QUEST_SCREENS.includes(screen) ? SQ.u.quest : null };
+    fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), keepalive: true }).catch(() => {});
+  }
+
   let direction = "";
   SQ.go = (id) => {
     const target = guard(id);
+    if (SQ.u.screen !== target) trackScreen(target, SQ.u.screen);
     if (ROOTS.includes(target)) SQ.u.history = [];
     else if (SQ.u.screen !== target) SQ.u.history.push(SQ.u.screen);
     direction = SQ.u.screen === target ? "" : "enter";
@@ -190,7 +209,9 @@
   SQ.back = () => {
     const prev = SQ.u.history.pop();
     direction = "enter-back";
+    const from = SQ.u.screen;
     SQ.u.screen = guard(prev || (SQ.screens[SQ.u.screen].role === "host" ? "host-dashboard" : "discover"));
+    if (SQ.u.screen !== from) trackScreen(SQ.u.screen, from);
     render(true);
   };
 
@@ -349,6 +370,7 @@
     const u = SQ.d.user;
     const fallback = u ? (u.registered ? "discover" : "ob-vibes") : "landing";
     SQ.u.screen = guard(last && SQ.screens[last] && !["quest", "tickets", "rate", "eventday", "eventday-chat", "search", "host-request", "host-checkin", "host-recap", "host-published", "host-create-dayinfo"].includes(last) ? last : fallback);
+    trackScreen(SQ.u.screen, null);
     render(true);
   })();
 })();

@@ -18,6 +18,7 @@ if (fs.existsSync(envPath)) {
 
 const db = require("./lib/db");
 const ai = require("./lib/ai");
+const { track, flush: flushAnalytics } = require("./lib/analytics");
 
 const PORT = process.env.PORT || 3000;
 
@@ -803,6 +804,39 @@ async function apiDraft({ hostId, requestId }) {
 }
 
 // ---------- Tiny web server ----------
+// ---------- Analytics: what each action records (ids, choices and counts; never names, emails or text) ----------
+const SAFE_ARGS = ["eventId", "requestId", "stars", "tags", "attended", "audience", "size", "when", "source", "origin", "transit", "budget", "maxMinutes", "registered", "toggleVibe", "type", "area", "submit"];
+const SAFE_RESULT = ["eventId", "requestId", "merged", "votes", "learned", "told", "reached", "requesters", "followers"];
+const DEMO_ACTIONS = ["demoLogin", "hostLoginAs", "hostApprove", "skipToAfter", "reset"]; // sketch shortcuts, left out of real numbers
+const pick = (obj, keys) => Object.fromEntries(keys.filter((k) => obj && obj[k] !== undefined).map((k) => [k, obj[k]]));
+function trackAction(type, { userId, hostId, sessionId, args, result, error }) {
+  const props = { ...pick(args, SAFE_ARGS), ...pick(result, SAFE_RESULT), ok: !error };
+  if (error) props.error = error;
+  if (DEMO_ACTIONS.includes(type)) props.demo = true;
+  const user = db.data.users[userId];
+  const id = Number(props.eventId);
+  if (user && user.log[id] && (type === "accept" || type === "lockPoll")) props.crewSize = user.log[id].crewSize;
+  track(type, { userId, hostId, sessionId, ...props });
+}
+// What the AI was asked for, how long it took, and which backend answered
+function trackAI(route, body, started, out, error) {
+  const fresh = !out || !out.time || Date.parse(out.time) >= started; // false when a cached result was reused
+  track(`ai_${route}`, {
+    userId: body.userId,
+    hostId: body.hostId,
+    sessionId: body.sessionId,
+    ok: !error,
+    ...(error ? { error } : {}),
+    ms: Date.now() - started,
+    fresh,
+    mode: out && out.mode,
+    results: out ? (out.matches || Object.keys(out.picks || {})).length : 0,
+    unmet: out && out.unmet ? out.unmet.length : 0,
+  });
+}
+// Screens the app reports from the browser (anything else is ignored)
+const SCREEN_ID = /^[a-z0-9-]{1,40}$/;
+
 function readBody(req) {
   return new Promise((resolve) => {
     let body = "";
@@ -837,7 +871,7 @@ const server = http.createServer(async (req, res) => {
       return sendJSON(res, 200, view(url.searchParams.get("user"), url.searchParams.get("host")));
     }
     if (req.method === "POST" && url.pathname === "/api/act") {
-      const { user: userId, host: hostId, type, args } = await readBody(req);
+      const { user: userId, host: hostId, sessionId, type, args } = await readBody(req);
       const fn = Object.prototype.hasOwnProperty.call(A, type) && A[type];
       if (!fn) return sendJSON(res, 400, { error: `Unknown action: ${type}` });
       const user = db.data.users[userId] || null;
@@ -846,8 +880,10 @@ const server = http.createServer(async (req, res) => {
       try {
         result = fn(ctx, args || {}) || {};
       } catch (err) {
+        trackAction(type, { userId, hostId, sessionId, args, error: err.message });
         return sendJSON(res, 400, { error: err.message });
       }
+      trackAction(type, { userId: result.userId || userId, hostId: result.hostId || hostId, sessionId, args, result });
       db.save();
       return sendJSON(res, 200, { result, state: view(result.userId || userId, result.hostId || hostId) });
     }
@@ -862,7 +898,23 @@ const server = http.createServer(async (req, res) => {
     }
     const ROUTES = { "/api/feed": apiFeed, "/api/search": apiSearch, "/api/blend": apiBlend, "/api/draft": apiDraft };
     if (req.method === "POST" && ROUTES[url.pathname]) {
-      return sendJSON(res, 200, await ROUTES[url.pathname](await readBody(req)));
+      const body = await readBody(req);
+      const route = url.pathname.slice("/api/".length);
+      const started = Date.now();
+      try {
+        const out = await ROUTES[url.pathname](body);
+        trackAI(route, body, started, out);
+        return sendJSON(res, 200, out);
+      } catch (err) {
+        trackAI(route, body, started, null, err.message);
+        throw err;
+      }
+    }
+    if (req.method === "POST" && url.pathname === "/api/track") {
+      const { user: userId, host: hostId, sessionId, screen, from, eventId } = await readBody(req);
+      if (SCREEN_ID.test(screen || "")) track("screen_view", { userId, hostId, sessionId, eventId, screen, from: SCREEN_ID.test(from || "") ? from : null });
+      res.writeHead(204);
+      return res.end();
     }
   } catch (err) {
     console.error(err);
@@ -881,12 +933,27 @@ const server = http.createServer(async (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-server.listen(PORT, () => {
+// Load the database (from Supabase or data/db.json) before taking requests
+db.load().then(() => server.listen(PORT, () => {
   console.log(`Sketch 1 running at http://localhost:${PORT}`);
+  console.log(process.env.SUPABASE_URL && process.env.SUPABASE_SECRET_KEY ? "Database: Supabase" : "Database: data/db.json (no Supabase keys in .env)");
   const m = ai.mode();
   if (m === "api") console.log(`Matching with AI via the Anthropic API (${ai.MODEL})`);
   else if (m === "claude-code") console.log("Matching with AI via Claude Code (your Claude subscription)");
   else console.log("Claude Code not found and no API key — using keyword matching (not AI)");
   const upcoming = db.data.events.filter((e) => !isOver(e));
   console.log(`${upcoming.length} upcoming events in the database (imported ${db.data.eventsImportedAt})`);
+  track("server_start", { aiMode: m, events: db.data.events.length });
+})).catch((err) => {
+  console.error("Could not load the database:", err.message);
+  process.exit(1);
 });
+
+// Send any analytics still waiting before the server stops (Ctrl+C, or a host redeploying)
+for (const sig of ["SIGINT", "SIGTERM"]) {
+  process.on(sig, () => {
+    const done = () => process.exit(0);
+    flushAnalytics().then(done, done);
+    setTimeout(done, 3000).unref();
+  });
+}
